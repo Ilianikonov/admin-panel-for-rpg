@@ -3,10 +3,7 @@ package com.example.demo.controller.request;
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
 import lombok.Data;
-
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 @Data
 public class CreatePlayerRequest {
