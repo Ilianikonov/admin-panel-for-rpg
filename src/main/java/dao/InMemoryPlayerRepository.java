@@ -2,7 +2,6 @@ package dao;
 
 import com.example.demo.entity.Player;
 import com.example.demo.filter.PlayerFilter;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +19,8 @@ public class InMemoryPlayerRepository implements PlayerRepository {
 
     @Override
     public Player updatePlayer(Player player) {
-
-        return null;
+        players.put(player.getId(), player);
+        return player;
     }
 
     @Override
@@ -36,11 +35,19 @@ public class InMemoryPlayerRepository implements PlayerRepository {
 
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
-        return null;
+        return players.values().stream()
+                .filter(player -> playerFilter.getName() == null || player.getName().equals(playerFilter.getName()))
+                .filter(player -> playerFilter.getTitle() == null || player.getTitle().equals(playerFilter.getTitle()))
+                .filter(player -> playerFilter.getRace() == null || player.getRace().equals(playerFilter.getRace()))
+                .filter(player -> playerFilter.getProfession() == null || player.getProfession().equals(playerFilter.getProfession()))
+                .filter(player -> playerFilter.getAfter() <= player.getBirthday().getTime() && player.getBirthday().getTime() <= playerFilter.getBefore())
+                .filter(player -> playerFilter.getBanned() == null || player.getBanned().equals(playerFilter.getBanned()))
+                .filter(player -> playerFilter.getMinExperience() <= player.getExperience() && player.getExperience() <= playerFilter.getMaxExperience())
+                .filter(player -> playerFilter.getMinLevel() <= player.getLevel() && player.getLevel() <= playerFilter.getMaxLevel())
+                .toList();
     }
-
     @Override
     public int getPlayersCount(PlayerFilter playerFilter) {
-        return 0;
+        return getPlayers(playerFilter).size();
     }
 }

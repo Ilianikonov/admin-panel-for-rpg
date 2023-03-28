@@ -2,9 +2,12 @@ package com.example.demo.filter;
 
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
+import lombok.Data;
 import lombok.Value;
+import org.springframework.stereotype.Component;
 
-@Value
+@Component
+@Data
 public class PlayerFilter {
     String name;
     String title;
@@ -12,9 +15,9 @@ public class PlayerFilter {
     Profession profession;
     Long after;
     Long before;
-    Boolean banned;
-    Integer minExperience;
-    Integer maxExperience;
-    Integer minLevel;
+    Boolean banned = false;
+    Integer minExperience = 0;
+    Integer maxExperience = 10000000;
+    Integer minLevel = 0;
     Integer maxLevel;
 }

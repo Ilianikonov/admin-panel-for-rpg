@@ -15,5 +15,5 @@ public class Player {
     Integer level = 0; //	Уровень персонажа
     Integer untilNextLevel = 100; //	Остаток опыта до следующего уровня
     Date birthday; //	Д0ата регистрации Диапазон значений года 2000..3000 включительно
-    Boolean banned; //	Забанен / не забанен
+    Boolean banned = false; //	Забанен / не забанен
 }
