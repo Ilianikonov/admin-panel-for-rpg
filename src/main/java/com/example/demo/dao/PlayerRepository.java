@@ -1,4 +1,4 @@
-package dao;
+package com.example.demo.dao;
 
 import com.example.demo.entity.Player;
 import com.example.demo.filter.PlayerFilter;
