@@ -3,7 +3,6 @@ package com.example.demo.controller.request;
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
 import lombok.Data;
-import java.util.Date;
 
 @Data
 public class CreatePlayerRequest {
@@ -11,8 +10,9 @@ public class CreatePlayerRequest {
     String	title; // Титул персонажа (до 30 знаков включительно)
     Race race; //	Расса персонажа
     Profession profession; //	Профессия персонажа
-    Date birthday; //	Д0ата регистрации Диапазон значений года 2000..3000 включительно
-
+    Long birthday; //	Д0ата регистрации Диапазон значений года 2000..3000 включительно
+    Boolean banned;
+    Integer experience;
     public void setName(String name) {
         if (name.length() < 12) {
             this.name = name;
@@ -29,13 +29,7 @@ public class CreatePlayerRequest {
         }
     }
 
-    public void setBirthday(Date birthday) {
-        Date dataMin = new Date(1,0,2000);
-        Date dataMax = new Date(30,11,3000);
-        if (dataMin.getTime() < birthday.getTime() && birthday.getTime() < dataMax.getTime()) {
+    public void setBirthday(Long birthday) {
         this.birthday = birthday;
-        } else {
-            new  RuntimeException ("превышает количество символов в title");
-        }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.demo.controller.request;
 
-import com.example.demo.entity.Id;
 import com.example.demo.entity.Player;
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
@@ -15,6 +14,7 @@ import java.util.List;
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
     private  final PlayerService playerService;
+
 
     public RestController(PlayerService playerService) {
         this.playerService = playerService;
@@ -32,7 +32,7 @@ public class RestController {
                                        @RequestParam(required = false) Integer maxExperience,
                                        @RequestParam(required = false) Integer minLevel,
                                        @RequestParam(required = false) Integer maxLevel,
-                                       @RequestParam(defaultValue = "id") PlayerOrder order,
+                                       @RequestParam(defaultValue = "ID") PlayerOrder order,
                                        @RequestParam(defaultValue = "0") Integer pageNumber,
                                        @RequestParam(defaultValue = "3") Integer pageSize){
         PlayerFilter playerFilter = new PlayerFilter(name, title, race, profession, after, before, banned, minExperience, maxExperience, minLevel, maxLevel);
@@ -53,36 +53,34 @@ public class RestController {
         return playerService.getPlayersCount(new PlayerFilter(name,title,race,profession,after,before,banned,minExperience,maxExperience,minLevel,maxLevel));
     }
     @PostMapping("/rest/player")
-    public Player createPlayers (@RequestParam() String name, String title, Race race, Profession profession, Long birthday, Boolean banned, Integer experience){
-       CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
+    public Player createPlayers (@RequestParam CreatePlayerRequest createPlayerRequest){
         Player player = new Player();
-        player.setName(name);
-        player.setTitle(title);
-        player.setRace(race);
-        player.setProfession(profession);
-        Date birthdayData = new Date(birthday);
-        player.setBirthday(birthdayData);
-        player.setExperience(experience);
-        player.setBanned(banned);
+        player.setName(createPlayerRequest.getName());
+        player.setTitle(createPlayerRequest.getTitle());
+        player.setRace(createPlayerRequest.getRace());
+        player.setProfession(createPlayerRequest.getProfession());
+        player.setBirthday(new Date(createPlayerRequest.birthday));
+        player.setExperience(createPlayerRequest.getExperience());
+        player.setBanned(createPlayerRequest.getBanned());
         return playerService.createPlayer(player);
     }
     @GetMapping("/rest/players/{id}")
-    public Player getPlayer(@RequestBody Id id){
-        return playerService.getPlayerById(id.getId());
+    public Player getPlayer(@RequestParam Long id){
+        return playerService.getPlayerById(id);
     }
     @PostMapping("/rest/players/{id}")
-    public Player updatePlayer (@RequestBody Id id, @RequestParam String name, String title, Race race, Profession profession, Long birthday, Boolean banned, Integer experience){
-        playerService.getPlayerById(id.getId()).setName(name);
-        playerService.getPlayerById(id.getId()).setTitle(title);
-        playerService.getPlayerById(id.getId()).setRace(race);
-        playerService.getPlayerById(id.getId()).setProfession(profession);
-        playerService.getPlayerById(id.getId()).setBirthday(new Date(birthday));
-        playerService.getPlayerById(id.getId()).setBanned(banned);
-        playerService.getPlayerById(id.getId()).setExperience(experience);
-        return playerService.updatePlayer(playerService.getPlayerById(id.getId()));
+    public Player updatePlayer (@RequestParam Long id, @RequestBody String name, String title, Race race, Profession profession, Long birthday, Boolean banned, Integer experience){
+        playerService.getPlayerById(id).setName(name);
+        playerService.getPlayerById(id).setTitle(title);
+        playerService.getPlayerById(id).setRace(race);
+        playerService.getPlayerById(id).setProfession(profession);
+        playerService.getPlayerById(id).setBirthday(new Date(birthday));
+        playerService.getPlayerById(id).setBanned(banned);
+        playerService.getPlayerById(id).setExperience(experience);
+        return playerService.updatePlayer(playerService.getPlayerById(id));
     }
     @DeleteMapping("/rest/players/{id}")
-    public void deletePlayer (@RequestBody Id id){
-        playerService.deletePlayer(id.getId());
+    public void deletePlayer (@RequestBody long id){
+        playerService.deletePlayer(id);
     }
 }

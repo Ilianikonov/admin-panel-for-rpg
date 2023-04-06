@@ -10,7 +10,11 @@ public enum PlayerOrder {
     private final String fieldName;
 
     PlayerOrder(String fieldName) {
-        this.fieldName = fieldName;
+        if (fieldName.equals(null)) {
+            this.fieldName = "id";
+        } else {
+            this.fieldName = fieldName;
+        }
     }
 
     public String getFieldName() {
