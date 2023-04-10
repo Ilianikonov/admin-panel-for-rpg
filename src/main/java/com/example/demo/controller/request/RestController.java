@@ -35,7 +35,7 @@ public class RestController {
                                        @RequestParam(defaultValue = "ID") PlayerOrder order,
                                        @RequestParam(defaultValue = "0") Integer pageNumber,
                                        @RequestParam(defaultValue = "3") Integer pageSize){
-        PlayerFilter playerFilter = new PlayerFilter(name, title, race, profession, after, before, banned, minExperience, maxExperience, minLevel, maxLevel);
+        PlayerFilter playerFilter = new PlayerFilter(name, title, race, profession, after, before, banned, minExperience, maxExperience, minLevel, maxLevel, order, pageNumber, pageSize);
         return playerService.getPlayers(playerFilter);
     }
     @GetMapping("/rest/players/count")
@@ -50,10 +50,10 @@ public class RestController {
                                @RequestParam(required = false) Integer maxExperience,
                                @RequestParam(required = false) Integer minLevel,
                                @RequestParam(required = false) Integer maxLevel){
-        return playerService.getPlayersCount(new PlayerFilter(name,title,race,profession,after,before,banned,minExperience,maxExperience,minLevel,maxLevel));
+        return playerService.getPlayersCount(new PlayerFilter(name,title,race,profession,after,before,banned,minExperience,maxExperience,minLevel,maxLevel, null, null,null));
     }
-    @PostMapping("/rest/player")
-    public Player createPlayers (@RequestParam CreatePlayerRequest createPlayerRequest){
+    @PostMapping("/rest/players")
+    public Player createPlayer (@RequestBody CreatePlayerRequest createPlayerRequest){
         Player player = new Player();
         player.setName(createPlayerRequest.getName());
         player.setTitle(createPlayerRequest.getTitle());
@@ -66,21 +66,22 @@ public class RestController {
     }
     @GetMapping("/rest/players/{id}")
     public Player getPlayer(@RequestParam Long id){
+        System.out.println(playerService.getPlayerById(id));
         return playerService.getPlayerById(id);
     }
     @PostMapping("/rest/players/{id}")
-    public Player updatePlayer (@RequestParam Long id, @RequestBody String name, String title, Race race, Profession profession, Long birthday, Boolean banned, Integer experience){
-        playerService.getPlayerById(id).setName(name);
-        playerService.getPlayerById(id).setTitle(title);
-        playerService.getPlayerById(id).setRace(race);
-        playerService.getPlayerById(id).setProfession(profession);
-        playerService.getPlayerById(id).setBirthday(new Date(birthday));
-        playerService.getPlayerById(id).setBanned(banned);
-        playerService.getPlayerById(id).setExperience(experience);
+    public Player updatePlayer (@RequestParam Long id, @RequestBody CreatePlayerRequest createPlayerRequest){
+        playerService.getPlayerById(id).setName(createPlayerRequest.getName());
+        playerService.getPlayerById(id).setTitle(createPlayerRequest.getTitle());
+        playerService.getPlayerById(id).setRace(createPlayerRequest.getRace());
+        playerService.getPlayerById(id).setProfession(createPlayerRequest.getProfession());
+        playerService.getPlayerById(id).setBirthday(new Date(createPlayerRequest.birthday));
+        playerService.getPlayerById(id).setBanned(createPlayerRequest.getBanned());
+        playerService.getPlayerById(id).setExperience(createPlayerRequest.getExperience());
         return playerService.updatePlayer(playerService.getPlayerById(id));
     }
     @DeleteMapping("/rest/players/{id}")
-    public void deletePlayer (@RequestBody long id){
+    public void deletePlayer (@RequestParam Long id){
         playerService.deletePlayer(id);
     }
 }
