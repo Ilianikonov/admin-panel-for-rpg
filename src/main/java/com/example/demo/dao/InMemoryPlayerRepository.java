@@ -98,6 +98,7 @@ public class InMemoryPlayerRepository implements PlayerRepository {
                 .filter(player -> playerFilter.getMaxExperience() == null || playerFilter.getMaxExperience() >= player.getExperience())
                 .filter(player -> playerFilter.getMinLevel() == null || playerFilter.getMinLevel() <= player.getLevel())
                 .filter(player -> playerFilter.getMaxLevel() == null || playerFilter.getMaxLevel() >= player.getLevel())
+                .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
                 .toList();
     }
     @Override

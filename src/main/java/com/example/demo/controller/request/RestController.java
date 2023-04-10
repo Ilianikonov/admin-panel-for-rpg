@@ -65,23 +65,15 @@ public class RestController {
         return playerService.createPlayer(player);
     }
     @GetMapping("/rest/players/{id}")
-    public Player getPlayer(@RequestParam Long id){
-        System.out.println(playerService.getPlayerById(id));
+    public Player getPlayer(@PathVariable Long id){
         return playerService.getPlayerById(id);
     }
     @PostMapping("/rest/players/{id}")
-    public Player updatePlayer (@RequestParam Long id, @RequestBody CreatePlayerRequest createPlayerRequest){
-        playerService.getPlayerById(id).setName(createPlayerRequest.getName());
-        playerService.getPlayerById(id).setTitle(createPlayerRequest.getTitle());
-        playerService.getPlayerById(id).setRace(createPlayerRequest.getRace());
-        playerService.getPlayerById(id).setProfession(createPlayerRequest.getProfession());
-        playerService.getPlayerById(id).setBirthday(new Date(createPlayerRequest.birthday));
-        playerService.getPlayerById(id).setBanned(createPlayerRequest.getBanned());
-        playerService.getPlayerById(id).setExperience(createPlayerRequest.getExperience());
-        return playerService.updatePlayer(playerService.getPlayerById(id));
+    public Player updatePlayer (@PathVariable Long id, @RequestBody CreatePlayerRequest createPlayerRequest){
+        return playerService.updatePlayer(id,createPlayerRequest);
     }
     @DeleteMapping("/rest/players/{id}")
-    public void deletePlayer (@RequestParam Long id){
+    public void deletePlayer (@PathVariable Long id){
         playerService.deletePlayer(id);
     }
 }
