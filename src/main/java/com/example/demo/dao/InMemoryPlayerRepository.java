@@ -63,12 +63,16 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     public Player createPlayer(Player player) {
         long id = players.size();
         player.setId(id);
+        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
+        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(id, player);
         return player;
     }
 
     @Override
     public Player updatePlayer(Player player) {
+        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
+        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(player.getId(), player);
         return player;
     }
@@ -97,6 +101,9 @@ public class InMemoryPlayerRepository implements PlayerRepository {
                 .filter(player -> playerFilter.getMaxExperience() == null || playerFilter.getMaxExperience() >= player.getExperience())
                 .filter(player -> playerFilter.getMinLevel() == null || playerFilter.getMinLevel() <= player.getLevel())
                 .filter(player -> playerFilter.getMaxLevel() == null || playerFilter.getMaxLevel() >= player.getLevel())
+                .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
+                .skip(playerFilter.getPageSize() * playerFilter.getPageNumber())
+                .limit(playerFilter.getPageSize())
                 .toList();
     }
     @Override

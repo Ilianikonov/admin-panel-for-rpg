@@ -17,4 +17,7 @@ public class PlayerFilter {
     Integer maxExperience;
     Integer minLevel;
     Integer maxLevel;
+    PlayerOrder playerOrder;
+    Integer pageNumber;
+    Long pageSize;
 }
