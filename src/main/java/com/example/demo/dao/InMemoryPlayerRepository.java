@@ -4,7 +4,6 @@ import com.example.demo.entity.Player;
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
 import com.example.demo.filter.PlayerFilter;
-import com.example.demo.filter.PlayerOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -64,12 +63,16 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     public Player createPlayer(Player player) {
         long id = players.size();
         player.setId(id);
+        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
+        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(id, player);
         return player;
     }
 
     @Override
     public Player updatePlayer(Player player) {
+        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
+        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(player.getId(), player);
         return player;
     }
@@ -99,7 +102,8 @@ public class InMemoryPlayerRepository implements PlayerRepository {
                 .filter(player -> playerFilter.getMinLevel() == null || playerFilter.getMinLevel() <= player.getLevel())
                 .filter(player -> playerFilter.getMaxLevel() == null || playerFilter.getMaxLevel() >= player.getLevel())
                 .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
-                .toList();
+                .toList()
+                .subList(playerFilter.getPageSize() * playerFilter.getPageNumber(), (playerFilter.getPageSize() * playerFilter.getPageNumber() + playerFilter.getPageSize()));
     }
     @Override
     public int getPlayersCount(PlayerFilter playerFilter) {
