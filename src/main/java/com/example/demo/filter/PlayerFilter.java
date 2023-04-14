@@ -19,5 +19,5 @@ public class PlayerFilter {
     Integer maxLevel;
     PlayerOrder playerOrder;
     Integer pageNumber;
-    Integer pageSize;
+    Long pageSize;
 }

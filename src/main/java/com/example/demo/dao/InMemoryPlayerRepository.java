@@ -102,8 +102,9 @@ public class InMemoryPlayerRepository implements PlayerRepository {
                 .filter(player -> playerFilter.getMinLevel() == null || playerFilter.getMinLevel() <= player.getLevel())
                 .filter(player -> playerFilter.getMaxLevel() == null || playerFilter.getMaxLevel() >= player.getLevel())
                 .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
-                .toList()
-                .subList(playerFilter.getPageSize() * playerFilter.getPageNumber(), (playerFilter.getPageSize() * playerFilter.getPageNumber() + playerFilter.getPageSize()));
+                .skip(playerFilter.getPageSize() * playerFilter.getPageNumber())
+                .limit(playerFilter.getPageSize())
+                .toList();
     }
     @Override
     public int getPlayersCount(PlayerFilter playerFilter) {
