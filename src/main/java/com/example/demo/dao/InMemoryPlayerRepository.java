@@ -15,50 +15,6 @@ import java.util.Map;
 public class InMemoryPlayerRepository implements PlayerRepository {
     private final Map <Long, Player> players = new HashMap<>();
 
-    public InMemoryPlayerRepository() {
-        Player player = new Player();
-        player.setName("Ilia");
-        player.setRace(Race.HUMAN);
-        player.setProfession(Profession.ROGUE);
-        player.setBirthday(new Date());
-        player.setExperience(100);
-        player.setLevel(2);
-        createPlayer(player);
-        Player player1 = new Player();
-        player1.setName("Ilya");
-        player1.setRace(Race.HOBBIT);
-        player1.setProfession(Profession.WARLOCK);
-        player1.setBirthday(new Date());
-        player1.setExperience(1000);
-        player1.setLevel(3);
-        createPlayer(player1);
-        Player player3 = new Player();
-        player3.setName("Lin");
-        player3.setRace(Race.GIANT);
-        player3.setProfession(Profession.ROGUE);
-        player3.setBirthday(new Date());
-        player3.setExperience(55);
-        player3.setLevel(5);
-        createPlayer(player3);
-        players.put(2l,player3);
-        Player player2 = new Player();
-        player2.setName("Igglya");
-        player2.setRace(Race.HOBBIT);
-        player2.setProfession(Profession.WARLOCK);
-        player2.setBirthday(new Date());
-        player2.setExperience(1010);
-        player2.setLevel(33);
-        createPlayer(player2);
-        Player player11 = new Player();
-        player11.setName("Ilewgegya");
-        player11.setRace(Race.HOBBIT);
-        player11.setProfession(Profession.WARLOCK);
-        player11.setBirthday(new Date());
-        player11.setExperience(10100);
-        player11.setLevel(3);
-        createPlayer(player11);
-    }
-
     @Override
     public Player createPlayer(Player player) {
         long id = players.size();
