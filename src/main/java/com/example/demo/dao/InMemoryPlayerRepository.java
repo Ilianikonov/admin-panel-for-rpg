@@ -16,6 +16,11 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     private final Map <Long, Player> players = new HashMap<>();
 
     @Override
+    public void clear() {
+        players.clear();
+    }
+
+    @Override
     public Player createPlayer(Player player) {
         long id = players.size();
         player.setId(id);
