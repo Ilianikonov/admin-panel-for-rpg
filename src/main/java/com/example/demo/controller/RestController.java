@@ -7,9 +7,12 @@ import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
 import com.example.demo.filter.PlayerFilter;
 import com.example.demo.filter.PlayerOrder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.service.PlayerService;
 
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 
@@ -58,7 +61,7 @@ public class RestController {
         return playerService.getPlayersCount(new PlayerFilter(name,title,race,profession,after,before,banned,minExperience,maxExperience,minLevel,maxLevel, PlayerOrder.ID, 0, Long.MAX_VALUE));
     }
     @PostMapping
-    public PlayersResponse createPlayer (@RequestBody CreatePlayerRequest createPlayerRequest){
+    public PlayersResponse createPlayer (@RequestBody @Valid CreatePlayerRequest createPlayerRequest){
         Player player = new Player();
         player.setName(createPlayerRequest.getName());
         player.setTitle(createPlayerRequest.getTitle());
@@ -70,16 +73,25 @@ public class RestController {
         return convertToPlayerResponse(playerService.createPlayer(player));
     }
     @GetMapping("/{id}")
-    public PlayersResponse getPlayer(@PathVariable Long id){
-        return convertToPlayerResponse(playerService.getPlayerById(id));
+    public ResponseEntity<PlayersResponse> getPlayer(@PathVariable Long id){
+        if (playerService.getPlayerById(id) == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(convertToPlayerResponse(playerService.getPlayerById(id)), HttpStatus.OK);
     }
     @PostMapping("/{id}")
-    public PlayersResponse updatePlayer (@PathVariable Long id, @RequestBody CreatePlayerRequest createPlayerRequest){
-        return convertToPlayerResponse(playerService.updatePlayer(id,createPlayerRequest));
+    public ResponseEntity<PlayersResponse> updatePlayer (@PathVariable Long id, @RequestBody CreatePlayerRequest createPlayerRequest){
+        if (playerService.getPlayerById(id) == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(convertToPlayerResponse(playerService.updatePlayer(id,createPlayerRequest)), HttpStatus.OK);
     }
     @DeleteMapping("/{id}")
-    public void deletePlayer (@PathVariable Long id){
-        playerService.deletePlayer(id);
+    public ResponseEntity<Void> deletePlayer (@PathVariable Long id){
+      if (playerService.deletePlayer(id) == null){
+          return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      }
+      return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private PlayersResponse convertToPlayerResponse(Player player){
