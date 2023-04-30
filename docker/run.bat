@@ -1,0 +1,1 @@
+docker run --name rpgdb -d -p 8091:5432 rpgdb:latest
