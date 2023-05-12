@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.controller.request.CreatePlayerRequest;
+import com.example.demo.dao.PlayerRepository;
 import com.example.demo.entity.Player;
 import com.example.demo.filter.PlayerFilter;
 import com.example.demo.dao.InMemoryPlayerRepository;
@@ -11,10 +12,10 @@ import java.util.List;
 
 @Service
 public class PlayerService {
-    private final InMemoryPlayerRepository inMemoryPlayerRepository;
+    private final PlayerRepository;
 
-    public PlayerService(InMemoryPlayerRepository inMemoryPlayerRepository) {
-        this.inMemoryPlayerRepository = inMemoryPlayerRepository;
+    public PlayerService(PlayerRepository playerRepository) {
+        this.PlayerRepository = playerRepository;
     }
 
     public Player createPlayer(Player player){
