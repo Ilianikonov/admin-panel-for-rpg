@@ -11,8 +11,8 @@ public class Player {
     Race race; //	Расса персонажа
     Profession profession; //	Профессия персонажа
     Integer experience = 0; //	Опыт персонажа. Диапазон значений 0..10,000,000
-    Integer level = 0; //	Уровень персонажа
-    Integer untilNextLevel = 100; //	Остаток опыта до следующего уровня
+    Integer level = ((int) Math.sqrt(200 * experience + 2500) - 50)/100; //	Уровень персонажа
+    Integer untilNextLevel = 50 * (level + 1) * (level + 2) - experience; //	Остаток опыта до следующего уровня
     Date birthday; //	Дата регистрации Диапазон значений года 2000..3000 включительно
     Boolean banned = false; //	Забанен / не забанен
 }
