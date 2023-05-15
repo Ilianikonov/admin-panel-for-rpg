@@ -42,14 +42,16 @@ public class DataBasePlayerRepository implements PlayerRepository{
 
     @Override
     public Player updatePlayer(Player player) {
-        return null;
+        jdbcTemplate.update("UPDATE player SET name=?, title=?, race_id=?, profession_id=?, experience=?, level=?, until_next_level=?, birthday=?, baned=? WHERE id = ?",
+                player.getName(), player.getTitle(), playerGetRaceId(player), playerGetProfessionId(player), player.getExperience(), player.getLevel(), player.getUntilNextLevel(), player.getBirthday(), player.getBanned(), player.getId());
+        return getPlayerById(player.getId());
     }
 
     @Override
     public Player deletePlayer(long id) {
-
-        return  jdbcTemplate.query("SELECT * FROM player WHERE id = ? DELETE ", new Object[]{id},
-                new PlayerMapper()).stream().findAny().orElse(null);
+        Player player = getPlayerById(id);
+        jdbcTemplate.update("DELETE FROM player WHERE id = ?  ", id);
+        return player;
     }
 
     @Override
