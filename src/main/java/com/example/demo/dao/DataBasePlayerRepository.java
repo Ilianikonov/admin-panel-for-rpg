@@ -5,7 +5,6 @@ import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
 import com.example.demo.filter.PlayerFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +16,11 @@ public class DataBasePlayerRepository implements PlayerRepository{
 
     public DataBasePlayerRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Override
+    public void clear() {
+        jdbcTemplate.update("");
     }
 
     @Override
@@ -56,13 +60,16 @@ public class DataBasePlayerRepository implements PlayerRepository{
 
     @Override
     public Player getPlayerById(long id) {
-        return jdbcTemplate.query("SELECT * FROM player WHERE id = ?", new Object[]{id},
-                new PlayerMapper()).stream().findAny().orElse(null);
+        return jdbcTemplate.queryForObject("SELECT * FROM player WHERE id = ?", new Object[]{id},
+                new PlayerMapper());
     }
 
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
-        return jdbcTemplate.query("SELECT * FROM player", new PlayerMapper()).stream()
+        return jdbcTemplate.query("select player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned\n" +
+                        "from player \n" +
+                        "inner join race on player.race_id = race.id\n" +
+                        "inner join profession on player.profession_id = profession.id", new PlayerMapper()).stream()
                 .filter(player -> playerFilter.getName() == null || player.getName().equals(playerFilter.getName()))
                 .filter(player -> playerFilter.getTitle() == null || player.getTitle().equals(playerFilter.getTitle()))
                 .filter(player -> playerFilter.getRace() == null || player.getRace().equals(playerFilter.getRace()))

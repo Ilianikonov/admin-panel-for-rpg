@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
-@ConditionalOnProperty(name = "application.repository.type", havingValue = "imMemory")
+@ConditionalOnProperty(name = "application.repository.type", havingValue = "inMemory")
 public class InMemoryPlayerRepository implements PlayerRepository {
     private final Map <Long, Player> players = new HashMap<>();
 
