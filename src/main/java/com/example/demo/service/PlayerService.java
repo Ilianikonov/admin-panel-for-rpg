@@ -13,7 +13,7 @@ import java.util.List;
 public class PlayerService {
     private final PlayerRepository playerRepository;
 
-    public PlayerService(PlayerRepository playerRepository, PlayerRepository playerRepository1) {
+    public PlayerService(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
 
     }
