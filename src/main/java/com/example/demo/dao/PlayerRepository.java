@@ -6,6 +6,7 @@ import com.example.demo.filter.PlayerFilter;
 import java.util.List;
 
 public interface PlayerRepository {
+    void clear();
     Player createPlayer(Player player);
     Player updatePlayer(Player player);
     Player deletePlayer(long id);

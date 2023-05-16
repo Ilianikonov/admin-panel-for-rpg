@@ -16,6 +16,11 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     private final Map <Long, Player> players = new HashMap<>();
 
     @Override
+    public void clear() {
+        players.clear();
+    }
+
+    @Override
     public Player createPlayer(Player player) {
         long id = players.size();
         player.setId(id);
@@ -42,8 +47,8 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
         return players.values().stream()
-                .filter(player -> playerFilter.getName() == null || player.getName().equals(playerFilter.getName()))
-                .filter(player -> playerFilter.getTitle() == null || player.getTitle().equals(playerFilter.getTitle()))
+                .filter(player -> playerFilter.getName() == null || player.getName().contains(playerFilter.getName()))
+                .filter(player -> playerFilter.getTitle() == null || player.getTitle().contains(playerFilter.getTitle()))
                 .filter(player -> playerFilter.getRace() == null || player.getRace().equals(playerFilter.getRace()))
                 .filter(player -> playerFilter.getProfession() == null || player.getProfession().equals(playerFilter.getProfession()))
                 .filter(player -> playerFilter.getAfter() == null || playerFilter.getAfter() <= player.getBirthday().getTime())
