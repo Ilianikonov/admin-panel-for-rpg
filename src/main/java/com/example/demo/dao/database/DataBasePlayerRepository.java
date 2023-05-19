@@ -13,7 +13,6 @@ import java.util.List;
 @ConditionalOnProperty(name = "application.repository.type", havingValue = "database")
 public class DataBasePlayerRepository implements PlayerRepository {
     private final JdbcTemplate jdbcTemplate;
-
     public DataBasePlayerRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -25,28 +24,14 @@ public class DataBasePlayerRepository implements PlayerRepository {
 
     @Override
     public Player createPlayer(Player player) {
-//        String sql = "insert into player (name,title,race_id,profession_id,experience,level,until_next_level,birthday,baned) values ("
-//                +"'"+ player.getName()+"', "
-//                +"'"+ player.getTitle()+"', "
-//                +"'"+ playerGetRaceId(player)+"', "
-//                +"'"+ playerGetProfessionId(player)+"', "
-//                +"'"+ player.getExperience()+"', "
-//                +"'"+ player.getLevel()+"', "
-//                +"'"+ player.getUntilNextLevel()+"', "
-//                +"'"+ player.getBirthday()+"', "
-//                +"'"+ player.getBanned()+"')"
-//                +"RETURNING id";
-       player.setId((long) jdbcTemplate.update("INSERT INTO player VALUES (?,?,?,?,?,?,?,?,?) RETURNING id",
-                player.getName(),player.getTitle(),playerGetRaceId(player),
-                playerGetProfessionId(player),player.getExperience(),player.getLevel(),
-                player.getUntilNextLevel(),player.getBirthday(),player.getBanned()));
-        return jdbcTemplate.query("SELECT * FROM player WHERE id = ?", new Object[]{player.getId()},
-                new PlayerMapper()).stream().findAny().orElse(null);
+       player.setId((long)jdbcTemplate.update("INSERT INTO player VALUES ('" + player.getName() +"'" + ",'" + player.getTitle() +"','"+ playerGetRaceId(player) +"','"+ playerGetProfessionId(player) +"',"+ player.getExperience() +","+ player.getLevel() +","+ player.getUntilNextLevel() +","+ player.getBirthday() +","+ player.getBanned() + ") RETURNING player.id", Integer.class));
+        return jdbcTemplate.queryForObject("SELECT player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned FROM player WHERE player.id = " + player.getId(),
+                new PlayerMapper());
     }
 
     @Override
     public Player updatePlayer(Player player) {
-        jdbcTemplate.update("UPDATE player SET name=?, title=?, race_id=?, profession_id=?, experience=?, level=?, until_next_level=?, birthday=?, baned=? WHERE id = ?",
+        jdbcTemplate.update("UPDATE player SET name=?, title=?, race_id=?, profession_id=?, experience=?, level=?, until_next_level=?, birthday=?, banned=? WHERE player.id = ?",
                 player.getName(), player.getTitle(), playerGetRaceId(player), playerGetProfessionId(player), player.getExperience(), player.getLevel(), player.getUntilNextLevel(), player.getBirthday(), player.getBanned(), player.getId());
         return getPlayerById(player.getId());
     }
@@ -60,73 +45,70 @@ public class DataBasePlayerRepository implements PlayerRepository {
 
     @Override
     public Player getPlayerById(long id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM player WHERE id = ?", new Object[]{id},
+        SqlBuilder sqlBuilder = new SqlBuilder("player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned",
+                "player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id");
+        return jdbcTemplate.queryForObject(sqlBuilder.where("player.id = " + id).build(),
                 new PlayerMapper());
     }
 
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
-        return jdbcTemplate.query("select player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned\n" +
-                "from player \n" +
-                "inner join race on player.race_id = race.id\n" +
-                "inner join profession on player.profession_id = profession.id\n" +
-                getFilterPlayerSQL(playerFilter), new PlayerMapper()).stream()
+        SqlBuilder sqlBuilder =new SqlBuilder("player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned",
+                "player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id");
+        return jdbcTemplate.query(getFilterPlayerSQL(playerFilter,sqlBuilder).build(), new PlayerMapper())
+                .stream()
                 .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
                 .skip(playerFilter.getPageSize() * playerFilter.getPageNumber())
                 .limit(playerFilter.getPageSize())
                 .toList();
     }
-    private String getFilterPlayerSQL(PlayerFilter playerFilter){
-        String filterPlayer = "";
+    private SqlBuilder getFilterPlayerSQL(PlayerFilter playerFilter, SqlBuilder sqlBuilder){
         if (playerFilter.getName() != null) {
-            filterPlayer += "player.name = '" + playerFilter.getName() + "'\n";
+            sqlBuilder.where("player.name = '" + playerFilter.getName() + "'");
         }
         if (playerFilter.getTitle() != null) {
-            filterPlayer += "player.title = '" + playerFilter.getTitle() + "'\n";
+            sqlBuilder.where("player.title = '" + playerFilter.getTitle() + "'");
         }
         if (playerFilter.getRace() != null) {
-            filterPlayer += "race.name = '" + playerFilter.getRace() + "'\n";
+            sqlBuilder.where("race.name = '" + playerFilter.getRace() + "'");
         }
         if (playerFilter.getProfession() != null) {
-            filterPlayer += "profession.name = '" + playerFilter.getProfession() + "'\n";
+            sqlBuilder.where("profession.name = '" + playerFilter.getProfession() + "'");
         }
         if (playerFilter.getAfter() != null) {
-            filterPlayer += "player.birthday <= '" + playerFilter.getAfter() + "'\n";
+            sqlBuilder.where("player.birthday <= '" + playerFilter.getAfter() + "'");
         }
         if (playerFilter.getBefore() != null) {
-            filterPlayer += "player.birthday >= '" + playerFilter.getBefore() + "'\n";
+            sqlBuilder.where("player.birthday >= '" + playerFilter.getBefore() + "'");
         }
         if (playerFilter.getBanned() != null) {
-            filterPlayer += "player.banned = '" + playerFilter.getBanned() + "'\n";
+            sqlBuilder.where("player.banned = '" + playerFilter.getBanned() + "'");
         }
         if (playerFilter.getMinExperience() != null) {
-            filterPlayer += "player.experience <= '" + playerFilter.getMinExperience() + "'\n";
+            sqlBuilder.where("player.experience >= '" + playerFilter.getMinExperience() + "'");
         }
         if (playerFilter.getMaxExperience() != null) {
-            filterPlayer += "player.experience >= '" + playerFilter.getMaxExperience() + "'\n";
+            sqlBuilder.where("player.experience <= '" + playerFilter.getMaxExperience() + "'");
         }
         if (playerFilter.getMinLevel() != null) {
-            filterPlayer += "player.level <= '" + playerFilter.getMinLevel() + "'\n";
+            sqlBuilder.where("player.level >= '" + playerFilter.getMinLevel() + "'");
         }
         if (playerFilter.getMaxLevel() != null) {
-            filterPlayer += "player.level >= '" + playerFilter.getMaxLevel() + "'\n";
+            sqlBuilder.where("player.level <= '" + playerFilter.getMaxLevel() + "'");
         }
-        System.out.println(filterPlayer);
-        return filterPlayer += ";";
+        return sqlBuilder;
     }
 
     @Override
     public int getPlayersCount(PlayerFilter playerFilter) {
-        return jdbcTemplate.query("select * from player\n" +
-                "inner join race on player.race_id = race.id\n" +
-                "inner join profession on player.profession_id = profession.id\n" +
-                getFilterPlayerSQL(playerFilter), new PlayerMapper()).size();
+        SqlBuilder sqlBuilder = new SqlBuilder("count(player.id)","player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id");
+        return jdbcTemplate.queryForObject(getFilterPlayerSQL(playerFilter,sqlBuilder).build(),Integer.class);
     }
     private int playerGetRaceId(Player player){
-       return jdbcTemplate.queryForRowSet("select id from race where race.name = ?", new Object[]{player.getRace()}).getRow();
+       return jdbcTemplate.queryForObject("select id from race where race.name = '" + player.getRace() + "'", Integer.class);
     }
     private int playerGetProfessionId(Player player){
 
-            return jdbcTemplate.queryForRowSet("select id from profession where profession.name = ?", new Object[]{player.getRace()}).getRow();
+            return jdbcTemplate.queryForObject("select id from profession where profession.name = '" + player.getProfession() + "'", Integer.class);
     }
 }
