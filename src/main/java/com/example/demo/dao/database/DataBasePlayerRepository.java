@@ -1,8 +1,8 @@
-package com.example.demo.dao;
+package com.example.demo.dao.database;
 
+import com.example.demo.dao.ComparatorPlayer;
+import com.example.demo.dao.PlayerRepository;
 import com.example.demo.entity.Player;
-import com.example.demo.entity.Profession;
-import com.example.demo.entity.Race;
 import com.example.demo.filter.PlayerFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 @ConditionalOnProperty(name = "application.repository.type", havingValue = "database")
-public class DataBasePlayerRepository implements PlayerRepository{
+public class DataBasePlayerRepository implements PlayerRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public DataBasePlayerRepository(JdbcTemplate jdbcTemplate) {
@@ -20,7 +20,7 @@ public class DataBasePlayerRepository implements PlayerRepository{
 
     @Override
     public void clear() {
-        jdbcTemplate.update("");
+        jdbcTemplate.update("truncate player");
     }
 
     @Override
@@ -67,64 +67,66 @@ public class DataBasePlayerRepository implements PlayerRepository{
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
         return jdbcTemplate.query("select player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned\n" +
-                        "from player \n" +
-                        "inner join race on player.race_id = race.id\n" +
-                        "inner join profession on player.profession_id = profession.id", new PlayerMapper()).stream()
-                .filter(player -> playerFilter.getName() == null || player.getName().equals(playerFilter.getName()))
-                .filter(player -> playerFilter.getTitle() == null || player.getTitle().equals(playerFilter.getTitle()))
-                .filter(player -> playerFilter.getRace() == null || player.getRace().equals(playerFilter.getRace()))
-                .filter(player -> playerFilter.getProfession() == null || player.getProfession().equals(playerFilter.getProfession()))
-                .filter(player -> playerFilter.getAfter() == null || playerFilter.getAfter() <= player.getBirthday().getTime())
-                .filter(player -> playerFilter.getBefore() == null || playerFilter.getBefore() >= player.getBirthday().getTime())
-                .filter(player -> playerFilter.getBanned() == null || player.getBanned().equals(playerFilter.getBanned()))
-                .filter(player -> playerFilter.getMinExperience() == null || playerFilter.getMinExperience() <= player.getExperience())
-                .filter(player -> playerFilter.getMaxExperience() == null || playerFilter.getMaxExperience() >= player.getExperience())
-                .filter(player -> playerFilter.getMinLevel() == null || playerFilter.getMinLevel() <= player.getLevel())
-                .filter(player -> playerFilter.getMaxLevel() == null || playerFilter.getMaxLevel() >= player.getLevel())
+                "from player \n" +
+                "inner join race on player.race_id = race.id\n" +
+                "inner join profession on player.profession_id = profession.id\n" +
+                getFilterPlayerSQL(playerFilter), new PlayerMapper()).stream()
                 .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
                 .skip(playerFilter.getPageSize() * playerFilter.getPageNumber())
                 .limit(playerFilter.getPageSize())
                 .toList();
     }
+    private String getFilterPlayerSQL(PlayerFilter playerFilter){
+        String filterPlayer = "";
+        if (playerFilter.getName() != null) {
+            filterPlayer += "player.name = '" + playerFilter.getName() + "'\n";
+        }
+        if (playerFilter.getTitle() != null) {
+            filterPlayer += "player.title = '" + playerFilter.getTitle() + "'\n";
+        }
+        if (playerFilter.getRace() != null) {
+            filterPlayer += "race.name = '" + playerFilter.getRace() + "'\n";
+        }
+        if (playerFilter.getProfession() != null) {
+            filterPlayer += "profession.name = '" + playerFilter.getProfession() + "'\n";
+        }
+        if (playerFilter.getAfter() != null) {
+            filterPlayer += "player.birthday <= '" + playerFilter.getAfter() + "'\n";
+        }
+        if (playerFilter.getBefore() != null) {
+            filterPlayer += "player.birthday >= '" + playerFilter.getBefore() + "'\n";
+        }
+        if (playerFilter.getBanned() != null) {
+            filterPlayer += "player.banned = '" + playerFilter.getBanned() + "'\n";
+        }
+        if (playerFilter.getMinExperience() != null) {
+            filterPlayer += "player.experience <= '" + playerFilter.getMinExperience() + "'\n";
+        }
+        if (playerFilter.getMaxExperience() != null) {
+            filterPlayer += "player.experience >= '" + playerFilter.getMaxExperience() + "'\n";
+        }
+        if (playerFilter.getMinLevel() != null) {
+            filterPlayer += "player.level <= '" + playerFilter.getMinLevel() + "'\n";
+        }
+        if (playerFilter.getMaxLevel() != null) {
+            filterPlayer += "player.level >= '" + playerFilter.getMaxLevel() + "'\n";
+        }
+        System.out.println(filterPlayer);
+        return filterPlayer += ";";
+    }
 
     @Override
     public int getPlayersCount(PlayerFilter playerFilter) {
-        return getPlayers(playerFilter).size();
+        return jdbcTemplate.query("select * from player\n" +
+                "inner join race on player.race_id = race.id\n" +
+                "inner join profession on player.profession_id = profession.id\n" +
+                getFilterPlayerSQL(playerFilter), new PlayerMapper()).size();
     }
     private int playerGetRaceId(Player player){
-        if   (player.getRace() == Race.HUMAN){
-            return 1;
-        } else if (player.getRace() == Race.DWARF){
-            return 2;
-        } else if (player.getRace() == Race.ELF){
-            return 3;
-        } else  if (player.getRace() == Race.GIANT){
-            return 4;
-        } else if (player.getRace() == Race.ORC){
-            return 5;
-        } else if (player.getRace() == Race.TROLL){
-            return 6;
-        } else {
-            return 7;
-        }
+       return jdbcTemplate.queryForRowSet("select id from race where race.name = ?", new Object[]{player.getRace()}).getRow();
     }
     private int playerGetProfessionId(Player player){
-        if   (player.getProfession() == Profession.WARRIOR){
-            return 1;
-        } else if (player.getProfession() == Profession.ROGUE){
-            return 2;
-        } else if (player.getProfession() == Profession.SORCERER){
-            return 3;
-        } else  if (player.getProfession() == Profession.CLERIC){
-            return 4;
-        } else if (player.getProfession() == Profession.PALADIN){
-            return 5;
-        } else if (player.getProfession() == Profession.NAZGUL){
-            return 6;
-        } else if (player.getProfession() == Profession.WARLOCK) {
-            return 7;
-        } else {
-            return 8;
-        }
+
+            return jdbcTemplate.queryForRowSet("select id from profession where profession.name = ?", new Object[]{player.getRace()}).getRow();
     }
 }

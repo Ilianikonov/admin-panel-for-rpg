@@ -1,4 +1,4 @@
-package com.example.demo.dao;
+package com.example.demo.dao.database;
 
 import com.example.demo.entity.Player;
 import com.example.demo.entity.Profession;
