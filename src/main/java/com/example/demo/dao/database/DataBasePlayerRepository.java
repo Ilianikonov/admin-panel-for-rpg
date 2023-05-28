@@ -1,6 +1,5 @@
 package com.example.demo.dao.database;
 
-import com.example.demo.dao.ComparatorPlayer;
 import com.example.demo.dao.PlayerRepository;
 import com.example.demo.entity.Player;
 import com.example.demo.filter.PlayerFilter;
@@ -23,9 +22,9 @@ public class DataBasePlayerRepository implements PlayerRepository {
     }
 
     @Override
-    public Player createPlayer(Player player) {
-       player.setId((long)jdbcTemplate.update("INSERT INTO player VALUES ('" + player.getName() +"'" + ",'" + player.getTitle() +"','"+ playerGetRaceId(player) +"','"+ playerGetProfessionId(player) +"',"+ player.getExperience() +","+ player.getLevel() +","+ player.getUntilNextLevel() +","+ player.getBirthday() +","+ player.getBanned() + ") RETURNING player.id", Integer.class));
-        return jdbcTemplate.queryForObject("SELECT player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned FROM player WHERE player.id = " + player.getId(),
+   public Player createPlayer(Player player) {
+        long playerID = jdbcTemplate.queryForObject("INSERT INTO player(name,title,race_id,profession_id,experience,level,until_next_level,birthday,banned) VALUES (?,?,(select race.id from race where race.name = ?),(select profession.id from profession where profession.name = ?),?,?,?,?,?) RETURNING player.id", new Object[]{player.getName(), player.getTitle(), player.getRace().name(), player.getProfession().name(), player.getExperience(), player.getLevel(), player.getUntilNextLevel(), player.getBirthday(), player.getBanned()}, Long.class);
+        return jdbcTemplate.queryForObject("SELECT player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned FROM player WHERE player.id = " + playerID,
                 new PlayerMapper());
     }
 
@@ -45,22 +44,17 @@ public class DataBasePlayerRepository implements PlayerRepository {
 
     @Override
     public Player getPlayerById(long id) {
-        SqlBuilder sqlBuilder = new SqlBuilder("player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned",
-                "player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id");
-        return jdbcTemplate.queryForObject(sqlBuilder.where("player.id = " + id).build(),
-                new PlayerMapper());
+        return jdbcTemplate.queryForObject("SELECT player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned FROM player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id WHERE player.id = ?", new Object[]{id},new PlayerMapper());
     }
 
     @Override
     public List<Player> getPlayers(PlayerFilter playerFilter) {
-        SqlBuilder sqlBuilder =new SqlBuilder("player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned",
+        SqlBuilder sqlBuilder = new SqlBuilder("player.id, player.name player_name, title, race.name race_name, profession.name profession_name, experience, level, until_next_level, birthday, banned",
                 "player inner join race on player.race_id = race.id inner join profession on player.profession_id = profession.id");
-        return jdbcTemplate.query(getFilterPlayerSQL(playerFilter,sqlBuilder).build(), new PlayerMapper())
-                .stream()
-                .sorted(new ComparatorPlayer(playerFilter.getPlayerOrder()))
-                .skip(playerFilter.getPageSize() * playerFilter.getPageNumber())
-                .limit(playerFilter.getPageSize())
-                .toList();
+        sqlBuilder.orderBy("player." + playerFilter.getPlayerOrder().getFieldName());
+        sqlBuilder.offset(playerFilter.getPageSize() * playerFilter.getPageNumber());
+        sqlBuilder.fetchNext(playerFilter.getPageSize());
+        return jdbcTemplate.query(getFilterPlayerSQL(playerFilter,sqlBuilder).build(), new PlayerMapper());
     }
     private SqlBuilder getFilterPlayerSQL(PlayerFilter playerFilter, SqlBuilder sqlBuilder){
         if (playerFilter.getName() != null) {
@@ -108,7 +102,6 @@ public class DataBasePlayerRepository implements PlayerRepository {
        return jdbcTemplate.queryForObject("select id from race where race.name = '" + player.getRace() + "'", Integer.class);
     }
     private int playerGetProfessionId(Player player){
-
             return jdbcTemplate.queryForObject("select id from profession where profession.name = '" + player.getProfession() + "'", Integer.class);
     }
 }
