@@ -2,8 +2,11 @@ package com.example.demo.controller.response;
 
 import com.example.demo.entity.Profession;
 import com.example.demo.entity.Race;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 
 @Data
 @Builder

@@ -1,17 +1,17 @@
 package com.example.demo.dao;
 
 import com.example.demo.entity.Player;
-import com.example.demo.entity.Profession;
-import com.example.demo.entity.Race;
 import com.example.demo.filter.PlayerFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
+@Repository
+@ConditionalOnProperty(name = "application.repository.type", havingValue = "inMemory")
 public class InMemoryPlayerRepository implements PlayerRepository {
     private final Map <Long, Player> players = new HashMap<>();
 
@@ -24,16 +24,12 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     public Player createPlayer(Player player) {
         long id = players.size();
         player.setId(id);
-        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
-        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(id, player);
         return player;
     }
 
     @Override
     public Player updatePlayer(Player player) {
-        player.setLevel(((int) Math.sqrt(200 * player.getExperience() + 2500) - 50)/100);
-        player.setUntilNextLevel(50 * (player.getLevel() + 1) * (player.getLevel() + 2) - player.getExperience());
         players.put(player.getId(), player);
         return player;
     }
